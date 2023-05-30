@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Arimo:wght@700&family=Comforter+Brush&family=Encode+Sans+Expanded:wght@700&family=Montserrat&family=Playfair+Display:ital@1&family=Press+Start+2P&family=Roboto:wght@300;500&family=Sigmar+One&display=swap"
+        rel="stylesheet">
+
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        #canvas {
+            background: rgb(255, 255, 255);
+        }
+        .container{
+            width: 900px;
+            height: 500px;
+        }
+        .container .thongbao {
+            width: 250px;
+            height: 300px;
+            
+            text-align: center;
+            font-family: 'Press Start 2P', cursive;
+            line-height: 40px;
+            padding: 20px;
+            display: none;
+            position: absolute;
+            top: 5%;
+            left: 23%;
+            border-radius: 20px;
+            background: rgb(122, 122, 235);
+        }
+        .container .thongbao.active{
+            display: block;
+        }
+        .container .thongbao button{
+            width: 100px;
+            height: 50px;
+            border: none;
+            border-radius: 10px;
+            font-size: 12px;
+            font-family: 'Press Start 2P', cursive;
+        }
+        .container .thongbao button#kylucmoi{
+            font-size: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <canvas id="canvas" width="900" height="500"></canvas>
+        <div class="thongbao">
+            <h1>SCORE</h1>
+            <h2 id="diemso"></h2>
+            <h1>BEST</h1>
+            <h2 id="bests"></h2>
+            <button onclick="location.reload()" ;>RESTART</button>
+            <h2 id="kylucmoi"></h2>
+        </div>
+    </div>
+
+
+    <script>
+
+        let c = document.getElementById("canvas");
+        let ctx = c.getContext("2d");
+
+        let arr = [c.width, 190];
+        let y = c.height / 2;
+        let diem = 0;
+        let best = 0;
+
+        if (!localStorage.getItem("best_score")){
+            localStorage.getItem("best_score", 0 )
+        }
+
+        function show() {
+            let bg = new Image();
+            bg.src = "imgs/bg.png";
+            ctx.drawImage(bg, 0, 0, c.width, c.height);
+            let cot1 = new Image();
+            cot1.src = "imgs/chimney1.png";
+            let cot2 = new Image();
+            cot2.src = "imgs/chimney2.png";
+            for (let i = 0; i < arr.length; i += 2) {
+                // Ve cot 1
+                ctx.drawImage(cot1, arr[i], 0, 50, arr[i + 1]);
+                // Ve cot 2
+                ctx.drawImage(cot2, arr[i], 120 + arr[i + 1], 50, c.height - 120 - arr[i + 1]);
+                // Di chuyen cot sang trai
+                arr[i] -= 2;
+                // Tao cot moi
+                if (arr[i] == c.width / 2) {
+                    let minHeight = 100; // Chieu cao toi thieu cho cot
+                    let maxHeight = 300; // Chieu cao toi da cho cot
+                    let randomHeight = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
+                    arr.push(c.width); // Tao mot cot moi voi vi tri bang chieu rong cua canvas
+                    arr.push(randomHeight); // Dat chieu cao cho cot moi
+                }
+                // Xoa cot cu
+                if (arr[i] == -20) {
+                    arr.splice(i, 2);
+                }
+                //Tinh diem
+                if (arr[i] == c.width / 5 - 30) {
+                    diem += 1;
+                    
+                }
+                ctx.font = "40px 'Press Start 2P', cursive";
+                ctx.fillText(diem, c.width / 2 - 50, 100, 100, 100);
+                // // Ve chim
+                let chim = new Image();
+                chim.src = "imgs/bird.png";
+                ctx.drawImage(chim, c.width / 5, y, 45, 40);
+                y += 1;
+                //Kiem tra va cham
+                if (y >= c.height - 40 || y <= 5) {
+
+                    thongbao();
+                    return;
+                }
+                if (((c.width / 5) >= arr[i] && (c.width / 5) <= arr[i] + 50) && (y <= arr[i + 1] || y + 37 >= arr[i + 1] + 120)
+                    || ((c.width / 5 + 40) >= arr[i] && (c.width / 5 + 40) <= arr[i] + 50) && (y <= arr[i + 1] || y + 37 >= arr[i + 1] + 120)
+                ) {
+                    thongbao();
+                    return;
+                }
+                //lever choi
+                // if (diem >= 1){
+                //     arr[i] -= 1,1;
+                //     y += 1,1;
+                // }
+
+            }
+            requestAnimationFrame(show);
+        }
+        show();
+        document.addEventListener("keydown", move_up);
+        function move_up() {
+            y -= 40;
+            // if (diem >= 1){
+            //     y -= 40;
+            //     }
+        }
+        function thongbao() {
+            // if (diem >= best) {
+            //     best = diem;
+            // }
+            diemso.innerHTML = diem;
+            let thongbao = document.querySelector(".thongbao")
+            thongbao.classList.add("active")
+            
+            let best_score = JSON.parse(localStorage.getItem("best_score"))
+            if (diem > best_score ){
+                best_score = diem;
+                kylucmoi.innerHTML="NEW BEST SOCRE: " + diem;
+                localStorage.setItem("best_score", best_score)
+            }
+            bests.innerHTML = best_score;
+        }
+    </script>
+</body>
+
+</html>
